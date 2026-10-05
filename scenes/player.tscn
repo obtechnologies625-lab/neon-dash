@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_stand"]
+size = Vector2(34, 52)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_slide"]
+size = Vector2(54, 28)
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 1
+floor_snap_length = 8.0
+script = ExtResource("1_player")
+
+[node name="StandShape" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_stand")
+
+[node name="SlideShape" type="CollisionShape2D" parent="."]
+position = Vector2(0, 12)
+disabled = true
+shape = SubResource("RectangleShape2D_slide")

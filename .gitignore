@@ -1,0 +1,15 @@
+# Godot's import cache and editor state
+.godot/
+*.translation
+
+# Generated web export (rebuild with .\tools\export.ps1)
+build/
+
+# Portable editor + downloads: far over GitHub's 100 MB file limit
+tools/godot-editor/
+tools/*.zip
+tools/*.tpz
+tools/tpl/
+
+# Local logs
+tools/*.log

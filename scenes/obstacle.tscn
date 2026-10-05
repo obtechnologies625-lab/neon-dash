@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/obstacle.gd" id="1_obstacle"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_obstacle"]
+size = Vector2(32, 36)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_beam"]
+size = Vector2(1600, 30)
+
+[node name="Obstacle" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_obstacle")
+
+[node name="Shape" type="CollisionShape2D" parent="."]
+position = Vector2(0, -18)
+shape = SubResource("RectangleShape2D_obstacle")
+
+[node name="BeamShape" type="CollisionShape2D" parent="."]
+position = Vector2(0, -45)
+disabled = true
+shape = SubResource("RectangleShape2D_beam")
