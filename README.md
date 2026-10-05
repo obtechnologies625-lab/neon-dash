@@ -1,5 +1,11 @@
 # Neon Dash
 
+<p align="center">
+  <a href="https://obtechnologies625-lab.github.io/neon-dash/">
+    <img src="https://img.shields.io/badge/Play_Now-6bf5f0?style=for-the-badge&logo=godot-engine&logoColor=150e33" alt="Play Now">
+  </a>
+</p>
+
 An endless runner built with **Godot 4.7** and **GDScript**, exported to run in a
 web browser.
 
