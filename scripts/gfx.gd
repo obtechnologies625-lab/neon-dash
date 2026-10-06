@@ -109,3 +109,14 @@ static func dust(
 		parent.get_tree().create_timer(1.4).timeout.connect(puff.queue_free)
 
 	return puff
+
+
+## Spawns an expanding shockwave ring that fades and frees itself.
+static func ring(parent: Node, at: Vector2, color: Color, max_radius: float = 46.0) -> Node:
+	var ring = Node2D.new()
+	ring.set_script(preload("res://scripts/ring.gd"))
+	ring.position = at
+	ring.color = color
+	ring.max_radius = max_radius
+	parent.add_child(ring)
+	return ring

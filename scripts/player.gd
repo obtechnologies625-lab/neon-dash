@@ -36,6 +36,8 @@ const DUST := Color("8fd8ff")
 
 ## Horizontal scroll speed of the world. The runner does NOT use this to move.
 var run_speed := 340.0
+## How far the world has scrolled; streams the motion trail behind the runner.
+var world_scroll := 0.0
 var alive := true
 
 ## False while a menu is open, so keys used to navigate it don't jump or slide.
@@ -50,7 +52,7 @@ var _was_on_floor := true
 var _phase := 0.0
 var _squash := Vector2.ONE
 var _blink := 0.0
-var _trail: Array[Vector2] = []
+var _trail: Array[Dictionary] = []
 var _particles_enabled := true
 var _touch_start_pos := Vector2.ZERO
 var _touch_start_time := 0.0
@@ -148,6 +150,8 @@ func _physics_process(delta: float) -> void:
 	if _buffer > 0.0:
 		if _coyote > 0.0:
 			_do_jump(JUMP_VELOCITY, 1.0, false)
+			# A ground jump spends the first jump, leaving exactly one air jump.
+			_jumps_left = 1
 			_buffer = 0.0
 			_coyote = 0.0
 		elif _jumps_left > 0:
@@ -165,7 +169,8 @@ func _physics_process(delta: float) -> void:
 	velocity.y = minf(velocity.y + gravity * delta, MAX_FALL_SPEED)
 
 	move_and_slide()
-	_update_squash(delta, on_floor)
+	# Re-query after moving so a landing is detected on the frame it happens.
+	_update_squash(delta, is_on_floor())
 	_update_trail(delta)
 
 
@@ -191,6 +196,7 @@ func _do_jump(power: float, squash: float, is_double: bool) -> void:
 
 	if _particles_enabled:
 		GFX.dust(get_parent(), position + Vector2(0.0, 24.0), DUST, 14 if not is_double else 18, 1.0)
+		GFX.ring(get_parent(), position + Vector2(0.0, 24.0), BODY, 40.0 if not is_double else 54.0)
 
 	jumped.emit(is_double)
 
@@ -201,6 +207,7 @@ func _update_squash(delta: float, on_floor: bool) -> void:
 		landed.emit()
 		if _particles_enabled:
 			GFX.dust(get_parent(), position + Vector2(0.0, 26.0), DUST, 16, 1.2)
+			GFX.ring(get_parent(), position + Vector2(0.0, 26.0), DUST, 34.0)
 
 	_was_on_floor = on_floor
 
@@ -211,10 +218,11 @@ func _update_squash(delta: float, on_floor: bool) -> void:
 
 
 func _update_trail(delta: float) -> void:
-	# Motion trail: a short history of positions, fading out behind the runner.
+	# Motion trail: a pose history that streams behind the runner as the world
+	# scrolls, instead of stacking up at the runner's fixed lane x.
 	if run_speed > 120.0 and not _sliding:
-		_trail.append(position)
-		if _trail.size() > 7:
+		_trail.append({"y": position.y, "scroll": world_scroll})
+		if _trail.size() > 9:
 			_trail.remove_at(0)
 	else:
 		_trail.clear()
@@ -258,7 +266,8 @@ func _draw_trail() -> void:
 	for i in _trail.size():
 		var t := float(i + 1) / float(_trail.size())
 		var alpha := 0.05 + t * 0.16
-		var offset := position - _trail[i]
+		var behind := world_scroll - float(_trail[i]["scroll"])
+		var offset := Vector2(-behind, float(_trail[i]["y"]) - position.y)
 		GFX.glow_circle(self, offset, 20.0 - i, Color(BODY.r, BODY.g, BODY.b, alpha), 2)
 		draw_circle(offset, 15.0 - i * 0.8, Color(BODY.r, BODY.g, BODY.b, alpha * 0.5))
 

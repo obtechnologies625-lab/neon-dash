@@ -28,6 +28,8 @@ enum Kind { SPIKE, DOUBLE_SPIKE, PILLAR, LOW_BAR, DRONE, LASER, GATE }
 @onready var _player = $Entities/Player
 @onready var _hud = $UI/HUD
 @onready var _camera = $Camera2D
+@onready var _fg = $Foreground
+@onready var _splash = $SplashLayer/Splash
 
 var _state: int = State.TITLE
 var _elapsed := 0.0
@@ -58,8 +60,15 @@ func _ready() -> void:
 	_hud.show_title()
 	_apply_settings()
 
+	# The boot splash owns the screen (and the keyboard) until it finishes.
+	_player.input_enabled = false
+	_splash.finished.connect(_on_splash_done)
+
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _splash.is_active():
+		return
+
 	# While the settings menu is open it owns the keyboard.
 	if _hud.is_settings_open():
 		if event.is_action_pressed("settings") or event.is_action_pressed("pause"):
@@ -141,6 +150,7 @@ func _advance_scroll(delta: float) -> void:
 	_scroll += _speed * delta
 	_world.scroll = _scroll
 	_ground.scroll = _scroll
+	_fg.scroll = _scroll
 
 	# On the title screen the runner waits at the start line.
 	_player.run_speed = 0.0 if _state == State.TITLE else _speed
@@ -276,6 +286,10 @@ func _on_obstacle_hit() -> void:
 	SoundFx.play(SoundFx.crash)
 	SoundFx.stop_music()
 	_player.kill()
+
+
+func _on_splash_done() -> void:
+	_player.input_enabled = true
 
 
 ## Pushes the current GameSettings onto the things that cache them.
